@@ -18,6 +18,7 @@ CREATE TABLE courses (
 CREATE TABLE exercises (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
     reference_file VARCHAR(255) NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
@@ -49,14 +50,14 @@ INSERT INTO courses (name, description) VALUES
 ('Cloud Computing', 'Introduction to cloud services and architectures.'),
 ('DevOps', 'CI/CD, automation, and infrastructure management.');
 
-INSERT INTO exercises (course_id, reference_file) VALUES
-(1, 'python_basics_01.py'),
-(1, 'python_basics_02.py'),
-(2, 'webdev_01.html'),
-(2, 'webdev_02.css'),
-(3, 'data_structures_01.c'),
-(3, 'data_structures_02.cpp'),
-(4, 'databases_01.sql'),
-(4, 'databases_02.sql'),
-(5, 'machine_learning_01.ipynb'),
-(5, 'machine_learning_02.ipynb');
+INSERT INTO exercises (course_id, name, reference_file) VALUES
+(1, 'Python Basics - Variables', 'python_basics_01.py'),
+(1, 'Python Basics - Functions', 'python_basics_02.py'),
+(2, 'HTML Basics', 'webdev_01.html'),
+(2, 'CSS Styling', 'webdev_02.css'),
+(3, 'Data Structures - Arrays', 'data_structures_01.c'),
+(3, 'Data Structures - Linked Lists', 'data_structures_02.cpp'),
+(4, 'SQL Introduction', 'databases_01.sql'),
+(4, 'Advanced SQL Queries', 'databases_02.sql'),
+(5, 'Intro to Machine Learning', 'machine_learning_01.ipynb'),
+(5, 'Neural Networks', 'machine_learning_02.ipynb');
