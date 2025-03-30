@@ -15,16 +15,14 @@ if (isset($_POST['name'], $_POST['email'], $_POST['password'])) {
     $post['name'] = trim($post['name']);
     $post['email'] = trim($post['email']);
 
-    $query = $mysqli->prepare("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)");
-    $query->bind_param(":name", $post['name']);
-    $query->bind_param(":email", $post['email']);
-    $query->bind_param(":password", password_hash($post['password'], PASSWORD_DEFAULT));
+    $query = $mysqli->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+    $query->bind_param("sss", $post['name'], $post['email'], password_hash($post['password'], PASSWORD_DEFAULT));
 
     if (!$query->execute()) return;
 
     $id = $query->insert_id;
-    $query = $mysqli->prepare("SELECT * FROM users WHERE id = :id");
-    $query->bind_param(":id", $id);
+    $query = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
+    $query->bind_param("i", $id);
     $query->execute();
     $user = $query->fetch();
 
