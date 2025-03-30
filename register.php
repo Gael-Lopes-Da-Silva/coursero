@@ -14,9 +14,10 @@ if (isset($_POST['name'], $_POST['email'], $_POST['password'])) {
 
     $post['name'] = trim($post['name']);
     $post['email'] = trim($post['email']);
+    $post['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
 
     $query = $mysqli->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-    $query->bind_param("sss", $post['name'], $post['email'], password_hash($post['password'], PASSWORD_DEFAULT));
+    $query->bind_param("sss", $post['name'], $post['email'], $post['password']);
 
     if (!$query->execute()) return;
 
