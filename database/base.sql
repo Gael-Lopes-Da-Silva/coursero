@@ -1,5 +1,4 @@
 CREATE DATABASE coursero;
-
 USE coursero;
 
 CREATE TABLE users (
@@ -10,16 +9,23 @@ CREATE TABLE users (
     role ENUM('admin', 'student') NOT NULL
 );
 
+CREATE TABLE courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+);
+
 CREATE TABLE exercises (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    course VARCHAR(255) NOT NULL,
-    number INT NOT NULL,
-    reference_file VARCHAR(255) NOT NULL
+    course_id INT NOT NULL,
+    reference_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
 CREATE TABLE submissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    course_id INT NOT NULL,
     exercise_id INT NOT NULL,
     language VARCHAR(50) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
@@ -27,5 +33,6 @@ CREATE TABLE submissions (
     score INT,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (exercise_id) REFERENCES exercises(id)
 );
