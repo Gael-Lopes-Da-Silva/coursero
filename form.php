@@ -9,24 +9,24 @@ if (!is_logged_in()) {
 
 include "_header.php";
 
-if (isset($_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'])) {
-    $originalFile = $_GET['file'];
-    $destinationDir = "submissions/";
-
-    if (!is_dir($destinationDir)) {
-        mkdir($destinationDir, 0777, true);
+if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['file'])) {
+    $uploadDir = "uploads/";
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
     }
 
-    $newFileName = uniqid("submission_") . "_" . basename($originalFile);
-    $newFilePath = $destinationDir . $newFileName;
+    $fileTmpPath = $_FILES['file']['tmp_name'];
+    $fileName = basename($_FILES['file']['name']);
+    $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
 
-    if (!copy($originalFile, $newFilePath)) {
-        exit("Error copying the file.");
-    }
+    $safeFileName = time() . "_" . preg_replace("/[^a-zA-Z0-9._-]/", "_", $fileName);
+    $destination = $uploadDir . $safeFileName;
+
+    if (!move_uploaded_file($fileTmpPath, $destination)) return;
 
     $status = "pending";
     $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $query->bind_param("iiisss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'], $status);
+    $query->bind_param("iiisss", $_SESSION['user']['id'], $_POST['course'], $_POST['exercise'], $_POST['language'], $_POST['file'], $status);
 
     if (!$query->execute()) return;
 
@@ -74,7 +74,7 @@ if (isset($_GET['course'])) {
             <div class="card-body">Soumettre votre fichier</div>
             <div class="card-body">
                 <?php if (count($exercises) > 0): ?>
-                    <form class="" method="get">
+                    <form method="post" enctype="multipart/form-data">
                         <input type="hidden" name="course" value="<?= $_GET['course'] ?>">
 
                         <div class="input-group mb-3">
