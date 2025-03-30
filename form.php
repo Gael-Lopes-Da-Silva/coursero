@@ -10,8 +10,8 @@ if (!is_logged_in()) {
 include "_header.php";
 
 if (isset($_GET['course'], $_GET['exercice'], $_GET['language'], $_GET['file'])) {
-    $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercice_id, language, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $query->bind_param("iiiss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercice'], $_GET['language'], "pending");
+    $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercice_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
+    $query->bind_param("iiiss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercice'], $_GET['language'], $_GET['file'], "pending");
 
     if (!$query->execute()) return;
 
