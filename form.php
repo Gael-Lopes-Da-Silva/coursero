@@ -10,8 +10,21 @@ if (!is_logged_in()) {
 include "_header.php";
 
 if (isset($_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'])) {
-    $status = "pending";
+    $originalFile = $_GET['file'];
+    $destinationDir = "submissions/";
 
+    if (!is_dir($destinationDir)) {
+        mkdir($destinationDir, 0777, true);
+    }
+
+    $newFileName = uniqid("submission_") . "_" . basename($originalFile);
+    $newFilePath = $destinationDir . $newFileName;
+
+    if (!copy($originalFile, $newFilePath)) {
+        exit("Error copying the file.");
+    }
+
+    $status = "pending";
     $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
     $query->bind_param("iiisss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'], $status);
 
