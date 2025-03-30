@@ -1,15 +1,6 @@
 <?php
 
-session_start();
-
-function is_logged_in(): bool {
-    return isset($_SESSION['user']);
-}
-
-function login(array $user): void {
-    $_SESSION['user'] = $user;
-}
-
-function logout(): void {
-    unset($_SESSION['user']);
-}
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+if (!defined('DB_USERNAME')) define('DB_USERNAME', 'root');
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', 'root');
+if (!defined('DB_NAME')) define('DB_NAME', 'coursero');
