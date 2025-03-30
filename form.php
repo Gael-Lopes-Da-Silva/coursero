@@ -40,7 +40,7 @@ if (isset($_GET['course'])) {
         <div class="card">
             <div class="card-body">Choisir un cours</div>
             <div class="card-body">
-                <?php if (count($course) > 0): ?>
+                <?php if (count($courses) > 0): ?>
                     <?php foreach ($courses as $course): ?>
                         <a href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
                     <?php endforeach; ?>
@@ -56,7 +56,7 @@ if (isset($_GET['course'])) {
         <div class="card">
             <div class="card-body">Soumettre votre fichier</div>
             <div class="card-body">
-                <?php if (count($course) > 0): ?>
+                <?php if (count($exercices) > 0): ?>
                     <form class="" method="get">
                         <input type="hidden" name="course" value="<?= $_GET['course'] ?>">
 
