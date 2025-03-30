@@ -36,7 +36,7 @@ if (isset($_GET['course'])) {
 ?>
 
 <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-    <?php if (isset($_GET['course'])): ?>
+    <?php if (!isset($_GET['course'])): ?>
         <div class="card">
             <div class="card-body">Choisir un cours</div>
             <div class="card-body">
