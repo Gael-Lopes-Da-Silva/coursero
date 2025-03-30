@@ -9,9 +9,9 @@ if (!is_logged_in()) {
 
 include "_header.php";
 
-if (isset($_GET['course'], $_GET['exercice'], $_GET['language'], $_GET['file'])) {
-    $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercice_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $query->bind_param("iiiss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercice'], $_GET['language'], $_GET['file'], "pending");
+if (isset($_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'])) {
+    $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
+    $query->bind_param("iiiss", $_SESSION['user']['id'], $_GET['course'], $_GET['exercise'], $_GET['language'], $_GET['file'], "pending");
 
     if (!$query->execute()) return;
 
@@ -27,7 +27,7 @@ if (isset($_GET['course'])) {
     $query = $mysqli->prepare("SELECT * FROM exercises WHERE course_id = ?");
     $query->bind_param("i", $_GET['course']);
     $query->execute();
-    $exercices = $query->get_result()->fetch_all(MYSQLI_ASSOC);
+    $exercises = $query->get_result()->fetch_all(MYSQLI_ASSOC);
 } else {
     $query = $mysqli->prepare("SELECT * FROM courses");
     $query->execute();
@@ -58,16 +58,16 @@ if (isset($_GET['course'])) {
         <div class="card">
             <div class="card-body">Soumettre votre fichier</div>
             <div class="card-body">
-                <?php if (count($exercices) > 0): ?>
+                <?php if (count($exercises) > 0): ?>
                     <form class="" method="get">
                         <input type="hidden" name="course" value="<?= $_GET['course'] ?>">
 
                         <div class="input-group mb-3">
-                            <label class="input-group-text" for="exercice"></label>
-                            <select class="form-select" name="exercice" id="exercice">
+                            <label class="input-group-text" for="exercise"></label>
+                            <select class="form-select" name="exercise" id="exercise">
                                 <option selected>Choisir un exercice...</option>
-                                <?php foreach ($exercices as $exercice): ?>
-                                    <option value="<?= $exercice['id'] ?>"><?= $exercice['name'] ?></option>
+                                <?php foreach ($exercises as $exersice): ?>
+                                    <option value="<?= $exercise['id'] ?>"><?= $exercise['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
