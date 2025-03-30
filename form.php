@@ -11,17 +11,17 @@ include "_header.php";
 
 $query = $mysqli->prepare("SELECT * FROM courses");
 $query->execute();
-$courses = $query->fetchAll();
+$courses = $query->get_result()->fetch_assoc();
 
 if (isset($_GET['course'], $_GET['exercice'], $_GET['language'], $_GET['file'])) {
     // TODO: lancer le script de vérification
 }
 
 if (isset($_GET['course'])) {
-    $query = $mysqli->prepare("SELECT * FROM exercices WHERE course_id = :course_id");
-    $query->bind_param(":course_id", $_GET['course']);
+    $query = $mysqli->prepare("SELECT * FROM exercices WHERE course_id = ?");
+    $query->bind_param("i", $_GET['course']);
     $query->execute();
-    $exercices = $query->fetchAll();
+    $exercices = $query->get_result()->fetch_assoc();
 }
 ?>
 
