@@ -40,14 +40,14 @@ if (isset($_GET['course'])) {
         <div class="card">
             <div class="card-body">Choisir un cours</div>
             <div class="card-body">
-                <?php if ($course): ?>
+                <?php if (count($course) > 0): ?>
                     <?php foreach ($courses as $course): ?>
                         <a href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="d-flex align-items-center text-danger gap-2">
+                    <div class="d-flex align-items-center text-secondary gap-2">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <p class="m-0">Problème lors du chargement des cours.</p>
+                        <p class="m-0">Aucun cours disponnible.</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -56,7 +56,7 @@ if (isset($_GET['course'])) {
         <div class="card">
             <div class="card-body">Soumettre votre fichier</div>
             <div class="card-body">
-                <?php if ($course): ?>
+                <?php if (count($course) > 0): ?>
                     <form class="" method="get">
                         <input type="hidden" name="course" value="<?= $_GET['course'] ?>">
 
@@ -86,9 +86,9 @@ if (isset($_GET['course'])) {
                         <input type="submit" class="btn btn-primary rounded col-12" value="Soumettre">
                     </form>
                 <?php else: ?>
-                    <div class="d-flex align-items-center text-danger gap-2">
+                    <div class="d-flex align-items-center text-secondary gap-2">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <p class="m-0">Problème lors du chargement des exercices.</p>
+                        <p class="m-0">Aucun exercice disponnible.</p>
                     </div>
                 <?php endif; ?>
             </div>
