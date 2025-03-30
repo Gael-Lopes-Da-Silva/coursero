@@ -1,0 +1,91 @@
+==========================
+INSTALLATION ENVIRONNEMENT - COURSERO
+==========================
+
+0. PRÉREQUIS : CRÉER LA MACHINE VIRTUELLE
+------------------------------------------
+- Utiliser VirtualBox ou autre hyperviseur
+- Installer Debian 12 (64 bits)
+- Activer l’accès réseau en mode **Accès par pont (Bridge)** pour permettre l’accès HTTP/HTTPS depuis l’hôte
+- Installer **openssh-server** pour permettre la connexion SSH :
+  - su  
+  - sudo apt install openssh-server
+- Vérifier l’adresse IP avec (vous devriez voir une ip 192.168.x.x) : ip a
+- Connexion SSH possible depuis l’hôte :
+    ssh user@IP_DE_LA_VM
+
+1. CONNEXION EN ROOT
+----------------------
+su
+
+2. MISE À JOUR DE LA VM
+--------------------------
+apt update && apt upgrade -y
+
+3. INSTALLATION DES PAQUETS NÉCESSAIRES
+----------------------------------------
+apt install apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl -y
+
+echo $PATH
+export PATH=$PATH:/usr/sbin:/sbin
+
+4. CONFIGURATION HTTPS (CERTIFICAT AUTO-SIGNÉ)
+-----------------------------------------------
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/coursero.key -out /etc/ssl/certs/coursero.crt
+
+Skip les informations qu'on demande
+
+nano /etc/apache2/sites-available/coursero.conf
+
+# Contenu du fichier :
+<VirtualHost *:443>
+    ServerAdmin admin@localhost
+    DocumentRoot /var/www/html/coursero
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/coursero.crt
+    SSLCertificateKeyFile /etc/ssl/private/coursero.key
+
+    <Directory /var/www/html/coursero>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# Activation SSL + redémarrage
+a2enmod ssl
+a2ensite coursero
+systemctl reload apache2
+
+5. CLONAGE DU DÉPÔT GIT
+------------------------
+cd /var/www/html
+git clone https://url-de-ton-dépôt-git coursero
+chown -R www-data:www-data coursero
+
+git config --global --add safe.directory /var/www/html/coursero
+
+6. CONFIGURATION DE LA BASE DE DONNÉES
+---------------------------------------
+# Exécute simplement la commande suivante pour tout importer :
+mysql -u root < /var/www/html/coursero/database/base.sql
+
+# Crée un utilisateur MySQL dédié au site :
+sudo mysql
+CREATE USER 'coursero_user'@'localhost' IDENTIFIED BY 'supermotdepasse';
+GRANT ALL PRIVILEGES ON coursero.* TO 'coursero_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+# Dans le fichier PHP de config (/var/www/html/coursero/_define.php) : nano _define.php
+define('DB_USERNAME', 'coursero_user');
+define('DB_PASSWORD', 'supermotdepasse');
+
+7. TEST FINAL
+--------------
+- Accès HTTPS au site de l’adresse IP avec (vous devriez voir une ip 192.168.x.x) "ip a" : https://[IP_VM]
+- Authentification
+- Soumission d’un fichier
+- Traitement par la file d’attente
+- Mise à jour du score
