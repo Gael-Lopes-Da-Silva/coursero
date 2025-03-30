@@ -19,11 +19,9 @@ if (isset($_POST['email'], $_POST['password'])) {
     $query->execute();
     $user = $query->get_result()->fetch_assoc();
 
-    var_dump($user);
-
     if (!$user) return;
 
-    if (password_verify($post['password'], $user['password'])) return;
+    if (!password_verify($post['password'], $user['password'])) return;
 
     login($user);
 
