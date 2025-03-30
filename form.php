@@ -24,7 +24,7 @@ if (isset($_GET['course'])) {
     $query->execute();
     $course = $query->get_result()->fetch_assoc();
 
-    $query = $mysqli->prepare("SELECT * FROM exercices WHERE course_id = ?");
+    $query = $mysqli->prepare("SELECT * FROM exercises WHERE course_id = ?");
     $query->bind_param("i", $_GET['course']);
     $query->execute();
     $exercices = $query->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -41,9 +41,11 @@ if (isset($_GET['course'])) {
             <div class="card-body">Choisir un cours</div>
             <div class="card-body">
                 <?php if (count($courses) > 0): ?>
-                    <?php foreach ($courses as $course): ?>
-                        <a href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
-                    <?php endforeach; ?>
+                    <div class="d-flex flex-column">
+                        <?php foreach ($courses as $course): ?>
+                            <a href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
+                        <?php endforeach; ?>
+                    </div>
                 <?php else: ?>
                     <div class="d-flex align-items-center text-secondary gap-2">
                         <i class="bi bi-exclamation-triangle-fill"></i>
@@ -65,7 +67,7 @@ if (isset($_GET['course'])) {
                             <select class="form-select" name="exercice" id="exercice">
                                 <option selected>Choisir un execice...</option>
                                 <?php foreach ($exercices as $exercice): ?>
-                                    <option value="<?= $exercice['id']?>"><?= $exercice['name']?></option>
+                                    <option value="<?= $exercice['id'] ?>"><?= $exercice['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
