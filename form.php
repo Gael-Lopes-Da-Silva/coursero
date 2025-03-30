@@ -88,7 +88,7 @@ if (isset($_GET['course'])) {
                     </form>
                 <?php endif; ?>
             <?php else: ?>
-                <div class="d-flex align-items-center text-warning">
+                <div class="d-flex align-items-center text-warning gap-2">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     <p class="m-0">Problème lors du chargement des cours.</p>
                 </div>
