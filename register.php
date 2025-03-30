@@ -18,7 +18,7 @@ if (isset($_POST['name'], $_POST['email'], $_POST['password'])) {
     $query = $mysqli->prepare("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)");
     $query->bind_param(":name", $post['name']);
     $query->bind_param(":email", $post['email']);
-    $query->bind_param(":password", $post['password']);
+    $query->bind_param(":password", password_hash($post['password'], PASSWORD_DEFAULT));
 
     if (!$query->execute()) return;
 
