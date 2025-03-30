@@ -26,7 +26,7 @@ if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['fil
 
     $status = "pending";
     $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $query->bind_param("iiisss", $_SESSION['user']['id'], $_POST['course'], $_POST['exercise'], $_POST['language'], $_POST['file'], $status);
+    $query->bind_param("iiisss", $_SESSION['user']['id'], $_POST['course'], $_POST['exercise'], $_POST['language'], $destination, $status);
 
     if (!$query->execute()) return;
 
