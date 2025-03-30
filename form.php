@@ -74,7 +74,7 @@ if (isset($_GET['course'])) {
 
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="language"></label>
-                            <select class="form-select" id="language">
+                            <select class="form-select" name="language" id="language">
                                 <option selected>Choisir un language...</option>
                                 <option value="C">C</option>
                                 <option value="Python">Python</option>
