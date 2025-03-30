@@ -29,6 +29,11 @@ apt install apache2 mariadb-server php libapache2-mod-php php-mysql unzip git op
 echo $PATH
 export PATH=$PATH:/usr/sbin:/sbin
 
+Modifier les paramètres suivants dans: nano /etc/php/8.2/apache2/php.ini
+upload_max_filesize = 50M
+post_max_size = 60M
+
+
 4. CONFIGURATION HTTPS (CERTIFICAT AUTO-SIGNÉ)
 -----------------------------------------------
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/coursero.key -out /etc/ssl/certs/coursero.crt
