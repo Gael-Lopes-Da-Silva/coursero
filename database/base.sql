@@ -12,7 +12,7 @@ CREATE TABLE users (
 CREATE TABLE courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description TEXT,
+    description TEXT
 );
 
 CREATE TABLE exercises (
