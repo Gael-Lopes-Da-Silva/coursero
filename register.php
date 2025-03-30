@@ -21,17 +21,7 @@ if (isset($_POST['name'], $_POST['email'], $_POST['password'])) {
 
     if (!$query->execute()) return;
 
-    $id = $query->insert_id;
-    $query = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
-    $query->bind_param("i", $id);
-    $query->execute();
-    $user = $query->fetch();
-
-    if (!$user) return;
-
-    login($user);
-
-    header("location: form.php");
+    header("location: login.php");
     exit;
 }
 

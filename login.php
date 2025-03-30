@@ -14,11 +14,12 @@ if (isset($_POST['email'], $_POST['password'])) {
 
     $post['email'] = trim($post['email']);
 
-    $query = $mysqli->prepare("SELECT * FROM users WHERE email = :email");
-    $query->bind_param(":email", $post['email']);
+    $query = $mysqli->prepare("SELECT * FROM users WHERE email = ?");
+    $query->bind_param("s", $post['email']);
     $query->execute();
-
     $user = $query->fetch();
+
+    var_dump($user);
 
     if (!$user) return;
 
