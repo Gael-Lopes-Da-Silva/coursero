@@ -66,7 +66,7 @@ if (isset($_GET['course'])) {
                             <label class="input-group-text" for="exercise"></label>
                             <select class="form-select" name="exercise" id="exercise">
                                 <option selected>Choisir un exercice...</option>
-                                <?php foreach ($exercises as $exersice): ?>
+                                <?php foreach ($exercises as $exercise): ?>
                                     <option value="<?= $exercise['id'] ?>"><?= $exercise['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
