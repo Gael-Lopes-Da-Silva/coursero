@@ -17,7 +17,7 @@ if (isset($_POST['email'], $_POST['password'])) {
     $query = $mysqli->prepare("SELECT * FROM users WHERE email = ?");
     $query->bind_param("s", $post['email']);
     $query->execute();
-    $user = $query->get_result();
+    $user = $query->get_result()->fetch_assoc();
 
     var_dump($user);
 
