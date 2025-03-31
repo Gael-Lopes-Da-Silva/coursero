@@ -1,13 +1,11 @@
 <?php
 
-include_once "./modules/_include.php";
+include_once "../include/_include.php";
 
 if (!is_logged_in()) {
     header("location: login.php");
     exit;
 }
-
-include "./modules/_header.php";
 
 if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['file'])) {
     $uploadDir = "uploads/";
@@ -48,6 +46,9 @@ if (isset($_GET['course'])) {
     $query->execute();
     $courses = $query->get_result()->fetch_all(MYSQLI_ASSOC);
 }
+
+include "../include/_header.php";
+
 ?>
 
 <div class="position-absolute top-0 end-0 p-2">
@@ -55,12 +56,14 @@ if (isset($_GET['course'])) {
 </div>
 
 <div class="position-absolute top-0 start-0 p-2">
-    <a class="btn btn-primary rounded" href="">Mes soumissions</a>
-    <a class="btn btn-primary rounded" href="">Ajouter un cours</a>
-    <a class="btn btn-primary rounded" href="">Ajouter un exercice</a>
+    <a class="btn btn-primary rounded" href="submissions.php">Mes soumissions</a>
+    <?php if ($_SESSION['user']['role'] == "admin" || $_SESSION['user']['role'] == "teacher"): ?>
+        <a class="btn btn-primary rounded" href="">Ajouter un cours</a>
+        <a class="btn btn-primary rounded" href="">Ajouter un exercice</a>
+    <?php endif; ?>
 </div>
 
-<div class="container w-100 h-100 d-flex align-items-center justify-content-center">
+<div class="container w-100 h-100 mh-75 d-flex align-items-center justify-content-center">
     <?php if (!isset($_GET['course'])): ?>
         <div class="card col-6">
             <div class="card-header">Choisir un cours</div>
@@ -68,7 +71,10 @@ if (isset($_GET['course'])) {
                 <?php if (count($courses) > 0): ?>
                     <div class="d-flex flex-column">
                         <?php foreach ($courses as $course): ?>
-                            <a class="" href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
+                            <div class="col-12">
+                                <span class="text-secondary">></span>
+                                <a class="" href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
@@ -83,7 +89,7 @@ if (isset($_GET['course'])) {
         <div class="card col-6">
             <div class="card-header d-flex align-items-center gap-3">
                 <a class="btn btn-primary rounded" href="form.php">Retour</a>
-                <p class="m-0">Soumettre votre fichier</p>
+                <p class="m-0">Soumettre votre fichier <span class="text-secondary">></span> <?= $course['name'] ?></p>
             </div>
             <div class="card-body p-4">
                 <?php if (count($exercises) > 0): ?>
@@ -128,4 +134,4 @@ if (isset($_GET['course'])) {
 
 <?php
 
-include "./modules/_footer.php";
+include "../include/_footer.php";

@@ -1,6 +1,6 @@
 <?php
 
-include_once "./view/modules/_include.php";
+include_once "./include/_include.php";
 
 if (isset($_GET['logout'])) logout();
 

@@ -1,6 +1,6 @@
 <?php
 
-include_once "./modules/_include.php";
+include_once "../include/_include.php";
 
 if (is_logged_in()) {
     header("location: form.php");
@@ -29,7 +29,7 @@ if (isset($_POST['email'], $_POST['password'])) {
     exit;
 }
 
-include "./modules/_header.php";
+include "../include/_header.php";
 
 ?>
 
@@ -62,4 +62,4 @@ include "./modules/_header.php";
 
 <?php
 
-include "./modules/_footer.php";
+include "../include/_footer.php";
