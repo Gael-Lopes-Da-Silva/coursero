@@ -13,6 +13,7 @@ $query->execute();
 $submissions = $query->get_result()->fetch_all(MYSQLI_ASSOC);
 
 include "../include/_header.php";
+include "../include/_notifs.php";
 
 ?>
 

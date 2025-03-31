@@ -16,13 +16,26 @@ if (isset($_POST['name'], $_POST['description'])) {
     $query = $mysqli->prepare("INSERT INTO courses (name, description) VALUES (?, ?)");
     $query->bind_param("ss", $_POST['name'], $_POST['description']);
 
-    if (!$query->execute()) return;
+    if (!$query->execute()) {
+        $_SESSION['notification'] = [
+            "message" => "Problème lors de l'enregistrement des informations.",
+            "type" => "danger",
+        ];
+        header("location: add_courses.php");
+        exit;
+    }
+
+    $_SESSION['notification'] = [
+        "message" => "Le cours a bien été ajouté.",
+        "type" => "success",
+    ];
 
     header("location: add_courses.php");
     exit;
 }
 
 include "../include/_header.php";
+include "../include/_notifs.php";
 
 ?>
 

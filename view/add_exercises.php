@@ -25,12 +25,31 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
     $safeFileName = time() . "_" . preg_replace("/[^a-zA-Z0-9._-]/", "_", $fileName);
     $destination = $uploadDir . $safeFileName;
 
-    if (!move_uploaded_file($fileTmpPath, $destination)) return;
+    if (!move_uploaded_file($fileTmpPath, $destination)) {
+        $_SESSION['notification'] = [
+            "message" => "Problème lors de la récupération du fichier.",
+            "type" => "danger",
+        ];
+        header("location: add_exercises.php");
+        exit;
+    }
 
     $query = $mysqli->prepare("INSERT INTO exercises (course_id, name, reference_file) VALUES (?, ?, ?)");
     $query->bind_param("iss", $_POST['course'], $_POST['name'], $destination);
 
-    if (!$query->execute()) return;
+    if (!$query->execute()) {
+        $_SESSION['notification'] = [
+            "message" => "Problème lors de l'enregistrement des informations.",
+            "type" => "danger",
+        ];
+        header("location: add_exercises.php");
+        exit;
+    }
+
+    $_SESSION['notification'] = [
+        "message" => "L'exercice a bien été ajouté.",
+        "type" => "success",
+    ];
 
     header("location: add_exercises.php");
     exit;
@@ -41,6 +60,7 @@ $query->execute();
 $courses = $query->get_result()->fetch_all(MYSQLI_ASSOC);
 
 include "../include/_header.php";
+include "../include/_notifs.php";
 
 ?>
 

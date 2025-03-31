@@ -20,13 +20,32 @@ if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['fil
     $safeFileName = time() . "_" . preg_replace("/[^a-zA-Z0-9._-]/", "_", $fileName);
     $destination = $uploadDir . $safeFileName;
 
-    if (!move_uploaded_file($fileTmpPath, $destination)) return;
+    if (!move_uploaded_file($fileTmpPath, $destination)) {
+        $_SESSION['notification'] = [
+            "message" => "Problème lors de la récupération du fichier.",
+            "type" => "danger",
+        ];
+        header("location: form.php?course=" . $_POST['course']);
+        exit;
+    }
 
     $status = "pending";
     $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");
     $query->bind_param("iiisss", $_SESSION['user']['id'], $_POST['course'], $_POST['exercise'], $_POST['language'], $destination, $status);
 
-    if (!$query->execute()) return;
+    if (!$query->execute()) {
+        $_SESSION['notification'] = [
+            "message" => "Problème lors de l'enregistrement des informations.",
+            "type" => "danger",
+        ];
+        header("location: form.php?course=" . $_POST['course']);
+        exit;
+    }
+
+    $_SESSION['notification'] = [
+        "message" => "La soumission a bien été prise en compte.",
+        "type" => "success",
+    ];
 
     header("location: form.php");
     exit;
@@ -49,6 +68,7 @@ if (isset($_GET['course'])) {
 }
 
 include "../include/_header.php";
+include "../include/_notifs.php";
 
 ?>
 
@@ -99,8 +119,8 @@ include "../include/_header.php";
 
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="exercise"><i class="bi bi-123"></i></label>
-                            <select class="form-select" name="exercise" id="exercise">
-                                <option selected>Choisir un exercice...</option>
+                            <select class="form-select" name="exercise" id="exercise" required>
+                                <option value="" selected>Choisir un exercice...</option>
                                 <?php foreach ($exercises as $exercise): ?>
                                     <option value="<?= $exercise['id'] ?>"><?= $exercise['name'] ?></option>
                                 <?php endforeach; ?>
@@ -109,15 +129,15 @@ include "../include/_header.php";
 
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="language"><i class="bi bi-braces"></i></label>
-                            <select class="form-select" name="language" id="language">
-                                <option selected>Choisir un language...</option>
+                            <select class="form-select" name="language" id="language" required>
+                                <option value="" selected>Choisir un language...</option>
                                 <option value="C">C</option>
                                 <option value="Python">Python</option>
                             </select>
                         </div>
 
                         <div class="input-group mb-4">
-                            <input type="file" name="file" class="form-control" id="file">
+                            <input type="file" name="file" class="form-control" id="file" accept=".c,.h,.py" required>
                         </div>
 
                         <input type="submit" class="btn btn-primary rounded col-12" value="Soumettre">

@@ -10,8 +10,6 @@ if (is_logged_in()) {
 if (isset($_POST['email'], $_POST['password'])) {
     $post = $_POST;
 
-    if (empty($post['email']) || empty($post['password'])) return;
-
     $post['email'] = trim($post['email']);
 
     $query = $mysqli->prepare("SELECT * FROM users WHERE email = ?");
@@ -19,9 +17,23 @@ if (isset($_POST['email'], $_POST['password'])) {
     $query->execute();
     $user = $query->get_result()->fetch_assoc();
 
-    if (!$user) return;
+    if (!$user) {
+        $_SESSION['notification'] = [
+            "message" => "E-mail incorrecte.",
+            "type" => "danger",
+        ];
+        header("location: login.php");
+        exit;
+    };
 
-    if (!password_verify($post['password'], $user['password'])) return;
+    if (!password_verify($post['password'], $user['password'])) {
+        $_SESSION['notification'] = [
+            "message" => "Mot de passe incorrecte.",
+            "type" => "danger",
+        ];
+        header("location: login.php");
+        exit;
+    }
 
     login($user);
 
@@ -30,6 +42,7 @@ if (isset($_POST['email'], $_POST['password'])) {
 }
 
 include "../include/_header.php";
+include "../include/_notifs.php";
 
 ?>
 
@@ -41,13 +54,13 @@ include "../include/_header.php";
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1"><i class="bi bi-envelope-fill"></i></span>
                     <input type="email" class="form-control" name="email" placeholder="E-mail" aria-label="E-mail"
-                        aria-describedby="email">
+                        aria-describedby="email" required>
                 </div>
 
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1"><i class="bi bi-lock-fill"></i></span>
                     <input type="password" class="form-control" name="password" placeholder="Mot de passe" aria-label="Mot de passe"
-                        aria-describedby="password">
+                        aria-describedby="password" required>
                 </div>
 
                 <div class="mb-4">
