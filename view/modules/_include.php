@@ -1,10 +1,8 @@
 <?php
 
-include_once "_define.php";
-
 session_start();
 
-$mysqli = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$mysqli = mysqli_connect("coursero_db", "coursero", "coursero", "coursero");
 
 function is_logged_in(): bool {
     return isset($_SESSION['user']);

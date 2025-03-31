@@ -1,6 +1,6 @@
 <?php
 
-include_once "_include.php";
+include_once "./modules/_include.php";
 
 if (is_logged_in()) {
     header("location: form.php");
@@ -29,12 +29,12 @@ if (isset($_POST['email'], $_POST['password'])) {
     exit;
 }
 
-include "_header.php";
+include "./modules/_header.php";
 
 ?>
 
-<div class="w-100 h-100 d-flex align-items-center justify-content-center">
-    <div class="card">
+<div class="container w-100 h-100 d-flex align-items-center justify-content-center">
+    <div class="card col-6">
         <div class="card-header">Connexion</div>
         <div class="card-body p-4">
             <form class="" method="post">
@@ -62,4 +62,4 @@ include "_header.php";
 
 <?php
 
-include "_footer.php";
+include "./modules/_footer.php";

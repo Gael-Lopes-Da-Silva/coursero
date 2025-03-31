@@ -1,13 +1,13 @@
 <?php
 
-include_once "_include.php";
+include_once "./modules/_include.php";
 
 if (!is_logged_in()) {
     header("location: login.php");
     exit;
 }
 
-include "_header.php";
+include "./modules/_header.php";
 
 if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['file'])) {
     $uploadDir = "uploads/";
@@ -50,15 +50,25 @@ if (isset($_GET['course'])) {
 }
 ?>
 
-<div class="w-100 h-100 d-flex align-items-center justify-content-center">
+<div class="position-absolute top-0 end-0 p-2">
+    <a class="btn btn-primary rounded" href="../index.php?logout">Déconnexion</a>
+</div>
+
+<div class="position-absolute top-0 start-0 p-2">
+    <a class="btn btn-primary rounded" href="">Mes soumissions</a>
+    <a class="btn btn-primary rounded" href="">Ajouter un cours</a>
+    <a class="btn btn-primary rounded" href="">Ajouter un exercice</a>
+</div>
+
+<div class="container w-100 h-100 d-flex align-items-center justify-content-center">
     <?php if (!isset($_GET['course'])): ?>
-        <div class="card">
-            <div class="card-body">Choisir un cours</div>
-            <div class="card-body">
+        <div class="card col-6">
+            <div class="card-header">Choisir un cours</div>
+            <div class="card-body p-4">
                 <?php if (count($courses) > 0): ?>
                     <div class="d-flex flex-column">
                         <?php foreach ($courses as $course): ?>
-                            <a href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
+                            <a class="" href="form.php?course=<?= $course['id'] ?>" title="<?= $course['description'] ?>"><?= $course['name'] ?></a>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
@@ -70,15 +80,18 @@ if (isset($_GET['course'])) {
             </div>
         </div>
     <?php else: ?>
-        <div class="card">
-            <div class="card-body">Soumettre votre fichier</div>
-            <div class="card-body">
+        <div class="card col-6">
+            <div class="card-header d-flex align-items-center gap-3">
+                <a class="btn btn-primary rounded" href="form.php">Retour</a>
+                <p class="m-0">Soumettre votre fichier</p>
+            </div>
+            <div class="card-body p-4">
                 <?php if (count($exercises) > 0): ?>
                     <form method="post" enctype="multipart/form-data">
                         <input type="hidden" name="course" value="<?= $_GET['course'] ?>">
 
                         <div class="input-group mb-3">
-                            <label class="input-group-text" for="exercise"></label>
+                            <label class="input-group-text" for="exercise"><i class="bi bi-123"></i></label>
                             <select class="form-select" name="exercise" id="exercise">
                                 <option selected>Choisir un exercice...</option>
                                 <?php foreach ($exercises as $exercise): ?>
@@ -88,7 +101,7 @@ if (isset($_GET['course'])) {
                         </div>
 
                         <div class="input-group mb-3">
-                            <label class="input-group-text" for="language"></label>
+                            <label class="input-group-text" for="language"><i class="bi bi-braces"></i></label>
                             <select class="form-select" name="language" id="language">
                                 <option selected>Choisir un language...</option>
                                 <option value="C">C</option>
@@ -115,4 +128,4 @@ if (isset($_GET['course'])) {
 
 <?php
 
-include "_footer.php";
+include "./modules/_footer.php";

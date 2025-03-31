@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="dark">
+<html lang="fr" class="w-100 h-100" data-bs-theme="dark">
 
 <head>
     <title>Coursero</title>
@@ -18,4 +18,4 @@
         integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
 </head>
 
-<body>
+<body class="w-100 h-100">
