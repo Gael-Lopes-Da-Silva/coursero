@@ -32,7 +32,7 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
 
     if (!$query->execute()) return;
 
-    header("location: form.php");
+    header("location: add_exercises.php");
     exit;
 }
 
