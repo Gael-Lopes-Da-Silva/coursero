@@ -1,0 +1,42 @@
+services:
+    coursero_db:
+        image: mariadb:latest
+        container_name: coursero_db
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_USER: coursero
+            MYSQL_PASSWORD: coursero
+            MYSQL_DATABASE: coursero
+        volumes:
+            - ./database:/docker-entrypoint-initdb.d
+        ports:
+            - "8000:3306"
+        healthcheck:
+            test: ["CMD-SHELL", "mariadb-admin ping -u root -proot || exit 1"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    coursero_web:
+        build: ./
+        container_name: coursero_web
+        depends_on:
+            coursero_db:
+                condition: service_healthy
+        volumes:
+            - ./:/var/www/html
+        ports:
+            - "5000:80"
+        environment:
+            APACHE_DOCUMENT_ROOT: /var/www/html
+
+    adminer:
+        image: adminer:latest
+        container_name: adminer
+        depends_on:
+            coursero_db:
+                condition: service_healthy
+        ports:
+            - 8080:8080
+        environment:
+            ADMINER_DEFAULT_SERVER: coursero_db

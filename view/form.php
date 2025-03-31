@@ -8,7 +8,7 @@ if (!is_logged_in()) {
 }
 
 if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['file'])) {
-    $uploadDir = "uploads/";
+    $uploadDir = "../uploads/";
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
     }
@@ -28,6 +28,7 @@ if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['fil
 
     if (!$query->execute()) return;
 
+    header("location: form.php");
     exit;
 }
 
