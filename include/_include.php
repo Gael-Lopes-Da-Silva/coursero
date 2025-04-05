@@ -2,7 +2,7 @@
 
 session_start();
 
-$mysqli = mysqli_connect("coursero_db", "coursero", "coursero", "coursero");
+$mysqli = mysqli_connect("localhost", "coursero", "coursero", "coursero");
 
 function is_logged_in(): bool {
     return isset($_SESSION['user']);

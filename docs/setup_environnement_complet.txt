@@ -78,14 +78,10 @@ mysql -u root < /var/www/html/coursero/database/base.sql
 
 # Crée un utilisateur MySQL dédié au site :
 sudo mysql
-CREATE USER 'coursero_user'@'localhost' IDENTIFIED BY 'supermotdepasse';
-GRANT ALL PRIVILEGES ON coursero.* TO 'coursero_user'@'localhost';
+CREATE USER 'coursero'@'localhost' IDENTIFIED BY 'coursero';
+GRANT ALL PRIVILEGES ON coursero.* TO 'coursero'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
-
-# Dans le fichier PHP de config (/var/www/html/coursero/_define.php) : nano _define.php
-define('DB_USERNAME', 'coursero_user');
-define('DB_PASSWORD', 'supermotdepasse');
 
 7. TEST FINAL
 --------------
