@@ -12,18 +12,23 @@ mkdir -p $TMP_DIR
 
 # Récupérer les soumissions "pending"
 submissions=$(mysql -u$DB_USER -p$DB_PASS -D$DB_NAME -N -e \
-"SELECT s.id, s.exercise_id, s.file_path, e.reference_file, s.language FROM submissions s JOIN exercises e ON s.exercise_id = e.id WHERE s.status = 'pending';")
+"SELECT s.id, s.exercise_id, s.file_path, e.reference_file, s.language, e.args FROM submissions s JOIN exercises e ON s.exercise_id = e.id WHERE s.status = 'pending';")
 
-while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language; do
+while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language args_json; do
     echo "Processing submission ID $submission_id (exercise $exercise_id)..."
 
     student_path="$UPLOADS_BASE/submissions/$(basename "$student_file")"
     ref_path="$UPLOADS_BASE/exercises/references/$(basename "$ref_file")"
-    test_json="../tests/${exercise_id}.json"
 
     # Vérification des fichiers nécessaires
-    if [[ ! -f "$student_path" || ! -f "$ref_path" || ! -f "$test_json" ]]; then
+    if [[ ! -f "$student_path" || ! -f "$ref_path" ]]; then
         echo "Fichiers manquants pour l'exercice $exercise_id. Passage au suivant."
+        continue
+    fi
+
+    # Vérifier si args est vide
+    if [[ -z "$args_json" || "$args_json" == "[]" ]]; then
+        echo "Aucun argument défini pour l'exercice $exercise_id. Passage au suivant."
         continue
     fi
 
@@ -31,7 +36,8 @@ while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language
     mysql -u$DB_USER -p$DB_PASS -D$DB_NAME -e \
     "UPDATE submissions SET status = 'running' WHERE id = $submission_id;"
 
-    args_list=$(jq -c '.args[]' "$test_json")
+    # Convertir les arguments en liste (via jq)
+    args_list=$(echo "$args_json" | jq -c '.[]')
     pass=0
     total=0
 

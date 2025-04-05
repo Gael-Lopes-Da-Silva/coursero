@@ -118,17 +118,21 @@ include "../include/_notifs.php";
                         <input type="file" name="file" class="form-control" required>
                     </div>
 
-                    <!-- Bloc pour ajouter des arguments -->
+                    <!-- Arguments -->
                     <div class="mb-3">
                         <label for="args">Arguments de test</label>
                         <div id="args-container">
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" name="args[0][]" placeholder="Argument 1">
-                                <input type="text" class="form-control" name="args[0][]" placeholder="Argument 2">
-                                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕</button>
+                            <!-- Première ligne par défaut -->
+                            <div class="mb-2 test-row">
+                                <div class="input-group mb-1">
+                                    <input type="text" class="form-control" name="args[0][]" placeholder="Argument">
+                                    <input type="text" class="form-control" name="args[0][]" placeholder="Argument">
+                                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="addArgsRow()">+ Ajouter un test</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addTestRow()">+ Ajouter un test</button>
                     </div>
 
                     <input type="submit" class="btn btn-primary rounded col-12" value="Ajouter cet exercice">
@@ -144,18 +148,34 @@ include "../include/_notifs.php";
 </div>
 
 <script>
-let argsIndex = 1;
-function addArgsRow() {
+let testIndex = 1;
+
+function addTestRow() {
     const container = document.getElementById('args-container');
     const row = document.createElement('div');
-    row.className = 'input-group mb-2';
+    row.className = 'mb-2 test-row';
     row.innerHTML = `
-        <input type="text" class="form-control" name="args[${argsIndex}][]" placeholder="Argument 1">
-        <input type="text" class="form-control" name="args[${argsIndex}][]" placeholder="Argument 2">
-        <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕</button>
+        <div class="input-group mb-1">
+            <input type="text" class="form-control" name="args[${testIndex}][]" placeholder="Argument">
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
     `;
     container.appendChild(row);
-    argsIndex++;
+    testIndex++;
+}
+
+function addArg(button) {
+    const group = button.previousElementSibling;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.placeholder = 'Argument';
+
+    const testNum = group.querySelector('input').name.match(/\d+/)[0];
+    input.name = `args[${testNum}][]`;
+
+    group.insertBefore(input, button);
 }
 </script>
 
