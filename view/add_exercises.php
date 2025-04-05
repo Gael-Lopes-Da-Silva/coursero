@@ -34,8 +34,22 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
         exit;
     }
 
-    $query = $mysqli->prepare("INSERT INTO exercises (course_id, name, reference_file) VALUES (?, ?, ?)");
-    $query->bind_param("iss", $_POST['course'], $_POST['name'], $destination);
+    // Traitement des arguments
+    $args = [];
+
+    if (isset($_POST['args']) && is_array($_POST['args'])) {
+        foreach ($_POST['args'] as $group) {
+            if (is_array($group) && count(array_filter($group)) > 0) {
+                $args[] = array_values(array_filter($group));
+            }
+        }
+    }
+
+    $args_json = json_encode($args);
+
+    // Insertion en base
+    $query = $mysqli->prepare("INSERT INTO exercises (course_id, name, reference_file, args) VALUES (?, ?, ?, ?)");
+    $query->bind_param("isss", $_POST['course'], $_POST['name'], $destination, $args_json);
 
     if (!$query->execute()) {
         $_SESSION['notification'] = [
@@ -86,9 +100,9 @@ include "../include/_notifs.php";
             <?php if (count($courses) > 0): ?>
                 <form method="post" enctype="multipart/form-data">
                     <div class="input-group mb-3">
-                        <label class="input-group-text" for="course"><i class="bi bi-mortarboard-fill"></i></i></label>
-                        <select class="form-select" name="course" id="course">
-                            <option selected>Choisir un cours...</option>
+                        <label class="input-group-text" for="course"><i class="bi bi-mortarboard-fill"></i></label>
+                        <select class="form-select" name="course" id="course" required>
+                            <option selected disabled>Choisir un cours...</option>
                             <?php foreach ($courses as $course): ?>
                                 <option value="<?= $course['id'] ?>"><?= $course['name'] ?></option>
                             <?php endforeach; ?>
@@ -97,11 +111,24 @@ include "../include/_notifs.php";
 
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="name"><i class="bi bi-tag-fill"></i></span>
-                        <input type="text" class="form-control" name="name" placeholder="Nom" aria-label="Nom" aria-describedby="name">
+                        <input type="text" class="form-control" name="name" placeholder="Nom de l'exercice" required>
                     </div>
 
-                    <div class="input-group mb-4">
-                        <input type="file" name="file" class="form-control" id="file">
+                    <div class="input-group mb-3">
+                        <input type="file" name="file" class="form-control" required>
+                    </div>
+
+                    <!-- Bloc pour ajouter des arguments -->
+                    <div class="mb-3">
+                        <label for="args">Arguments de test</label>
+                        <div id="args-container">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="args[0][]" placeholder="Argument 1">
+                                <input type="text" class="form-control" name="args[0][]" placeholder="Argument 2">
+                                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addArgsRow()">+ Ajouter un test</button>
                     </div>
 
                     <input type="submit" class="btn btn-primary rounded col-12" value="Ajouter cet exercice">
@@ -109,13 +136,27 @@ include "../include/_notifs.php";
             <?php else: ?>
                 <div class="d-flex align-items-center text-secondary gap-2">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    <p class="m-0">Aucun cours disponnible.</p>
+                    <p class="m-0">Aucun cours disponible.</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </div>
 
-<?php
+<script>
+let argsIndex = 1;
+function addArgsRow() {
+    const container = document.getElementById('args-container');
+    const row = document.createElement('div');
+    row.className = 'input-group mb-2';
+    row.innerHTML = `
+        <input type="text" class="form-control" name="args[${argsIndex}][]" placeholder="Argument 1">
+        <input type="text" class="form-control" name="args[${argsIndex}][]" placeholder="Argument 2">
+        <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(row);
+    argsIndex++;
+}
+</script>
 
-include "../include/_footer.php";
+<?php include "../include/_footer.php"; ?>

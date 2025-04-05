@@ -20,6 +20,7 @@ CREATE TABLE exercises (
     course_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     reference_file VARCHAR(255) NOT NULL,
+    args JSON NOT NULL DEFAULT '[]',
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
