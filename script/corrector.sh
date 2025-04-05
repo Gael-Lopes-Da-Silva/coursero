@@ -39,8 +39,8 @@ while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language
     if [[ "$language" == "python" ]]; then
         for args in $args_list; do
             clean_args=$(echo $args | jq -r '. | join(" ")')
-            ref_out=$(python3 "$ref_path" $clean_args 2>/dev/null)
-            sub_out=$(python3 "$student_path" $clean_args 2>/dev/null)
+            ref_out=$(python3 "$ref_path" $clean_args 2>/dev/null | xargs)
+            sub_out=$(python3 "$student_path" $clean_args 2>/dev/null | xargs)
 
             if [[ "$ref_out" == "$sub_out" ]]; then
                 ((pass++))
