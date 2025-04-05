@@ -26,8 +26,11 @@ apt update && apt upgrade -y
 ----------------------------------------
 apt install apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl -y
 
-echo $PATH
+# ajoutez sbin dans le PATH
 export PATH=$PATH:/usr/sbin:/sbin
+
+# vérifiez les variable d'environnement
+echo $PATH
 
 Modifier les paramètres suivants dans: nano /etc/php/8.2/apache2/php.ini
 upload_max_filesize = 50M
@@ -66,7 +69,7 @@ systemctl reload apache2
 5. CLONAGE DU DÉPÔT GIT
 ------------------------
 cd /var/www/html
-git clone https://url-de-ton-dépôt-git coursero
+git clone https://github.com/Gael-Lopes-Da-Silva/coursero.git
 chown -R www-data:www-data coursero
 
 git config --global --add safe.directory /var/www/html/coursero
