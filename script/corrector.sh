@@ -36,7 +36,7 @@ while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language
     total=0
 
     # Python
-    if [[ "$language" == "python" ]]; then
+    if [[ "$language" == "Python" ]]; then
         for args in $args_list; do
             clean_args=$(echo $args | jq -r '. | join(" ")')
             ref_out=$(python3 "$ref_path" $clean_args 2>/dev/null | xargs)
@@ -49,7 +49,7 @@ while IFS=$'\t' read -r submission_id exercise_id student_file ref_file language
         done
 
     # C
-    elif [[ "$language" == "c" ]]; then
+    elif [[ "$language" == "C" ]]; then
         gcc "$ref_path" -o "$TMP_DIR/ref_bin" 2>/dev/null
         gcc "$student_path" -o "$TMP_DIR/sub_bin" 2>/dev/null
 
