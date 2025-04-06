@@ -140,35 +140,78 @@ include "../include/_notifs.php";
 <script>
 let testIndex = 0;
 
+// Ajoute une ligne de test complète
 function addTestRow() {
     const container = document.getElementById('args-container');
     const row = document.createElement('div');
     row.className = 'border rounded p-3 bg-light position-relative test-row';
 
     row.innerHTML = `
-        <div class="arg-list d-flex flex-column gap-2 mb-2">
-            <!-- arguments seront ajoutés ici -->
+        <div class="arg-list d-flex flex-column gap-2 mb-2"></div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="syncAddArg()">+ Ajouter un argument</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="syncRemoveArg()">✕ Supprimer un argument</button>
+            <button type="button" class="btn btn-sm btn-danger ms-auto" onclick="this.parentElement.parentElement.remove()">✕ Supprimer ce test</button>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="addArg(this)">+ Ajouter un argument</button>
-        <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">✕ Supprimer ce test</button>
     `;
 
     container.appendChild(row);
-    testIndex++;
-    addArg(row.querySelector('button')); // Ajoute un premier argument automatiquement
+
+    // Synchronise avec les autres tests
+    syncToLongestArgs();
 }
 
-function addArg(button) {
-    const argList = button.parentElement.querySelector('.arg-list');
-    const testNum = Array.from(document.querySelectorAll('.test-row')).indexOf(button.closest('.test-row'));
+// Ajoute un argument à tous les tests
+function syncAddArg() {
+    document.querySelectorAll('.test-row').forEach((row, i) => {
+        const argList = row.querySelector('.arg-list');
+        const testNum = i;
+        const argItem = document.createElement('div');
+        argItem.className = 'input-group arg-item';
+        argItem.innerHTML = `
+            <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
+            <button type="button" class="btn btn-outline-danger" disabled>✕</button>
+        `;
+        argList.appendChild(argItem);
+    });
+}
 
-    const argItem = document.createElement('div');
-    argItem.className = 'input-group arg-item';
-    argItem.innerHTML = `
-        <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
-        <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
-    `;
-    argList.appendChild(argItem);
+// Supprime le **dernier** argument dans tous les tests
+function syncRemoveArg() {
+    document.querySelectorAll('.test-row').forEach((row) => {
+        const argList = row.querySelector('.arg-list');
+        const items = argList.querySelectorAll('.arg-item');
+        if (items.length > 0) {
+            argList.removeChild(items[items.length - 1]);
+        }
+    });
+}
+
+// Lorsque l’on ajoute un test, lui ajouter autant d’arguments que les autres
+function syncToLongestArgs() {
+    const allRows = document.querySelectorAll('.test-row');
+    if (allRows.length === 0) return;
+
+    // Trouver le nombre max d'arguments
+    let maxArgs = 0;
+    allRows.forEach(row => {
+        const count = row.querySelectorAll('.arg-item').length;
+        if (count > maxArgs) maxArgs = count;
+    });
+
+    // Mettre à niveau tous les tests
+    allRows.forEach((row, i) => {
+        const argList = row.querySelector('.arg-list');
+        while (argList.children.length < maxArgs) {
+            const argItem = document.createElement('div');
+            argItem.className = 'input-group arg-item';
+            argItem.innerHTML = `
+                <input type="text" class="form-control" name="args[${i}][]" placeholder="Argument">
+                <button type="button" class="btn btn-outline-danger" disabled>✕</button>
+            `;
+            argList.appendChild(argItem);
+        }
+    });
 }
 </script>
 
