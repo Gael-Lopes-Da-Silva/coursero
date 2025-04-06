@@ -120,21 +120,9 @@ include "../include/_notifs.php";
 
                     <!-- Arguments -->
                     <div class="mb-3">
-                        <label for="args">Arguments de test</label>
-                        <div id="args-container">
-                            <!-- Première ligne par défaut -->
-                            <div class="mb-2 test-row">
-                                <div class="input-group mb-1">
-                                <div class="arg-item input-group mb-1">
-                                    <input type="text" class="form-control" name="args[0][]" placeholder="Argument">
-                                    <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
-                                </div>
-                                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="addTestRow()">+ Ajouter un test</button>
+                        <label for="args" class="form-label fw-bold">Tests & Arguments</label>
+                        <div id="args-container" class="d-flex flex-column gap-3"></div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addTestRow()">+ Ajouter un test</button>
                     </div>
 
                     <input type="submit" class="btn btn-primary rounded col-12" value="Ajouter cet exercice">
@@ -150,42 +138,38 @@ include "../include/_notifs.php";
 </div>
 
 <script>
-let testIndex = 1;
+let testIndex = 0;
 
 function addTestRow() {
     const container = document.getElementById('args-container');
     const row = document.createElement('div');
-    row.className = 'mb-2 test-row';
+    row.className = 'border rounded p-3 bg-light position-relative test-row';
+
     row.innerHTML = `
-        <div class="arg-list">
-            <div class="arg-item input-group mb-1">
-                <input type="text" class="form-control" name="args[${testIndex}][]" placeholder="Argument">
-                <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
-            </div>
+        <div class="arg-list d-flex flex-column gap-2 mb-2">
+            <!-- arguments seront ajoutés ici -->
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
-        <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="addArg(this)">+ Ajouter un argument</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">✕ Supprimer ce test</button>
     `;
+
     container.appendChild(row);
     testIndex++;
+    addArg(row.querySelector('button')); // Ajoute un premier argument automatiquement
 }
-
 
 function addArg(button) {
     const argList = button.parentElement.querySelector('.arg-list');
-    const testNum = argList.querySelector('input').name.match(/\d+/)[0];
+    const testNum = Array.from(document.querySelectorAll('.test-row')).indexOf(button.closest('.test-row'));
 
     const argItem = document.createElement('div');
-    argItem.className = 'arg-item input-group mb-1';
+    argItem.className = 'input-group arg-item';
     argItem.innerHTML = `
         <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
         <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
     `;
-
     argList.appendChild(argItem);
 }
-
-
 </script>
 
 <?php include "../include/_footer.php"; ?>
