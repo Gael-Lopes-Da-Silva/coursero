@@ -3,54 +3,51 @@
 INSTALLATION ENVIRONNEMENT - COURSERO (HA + HTTPS)
 ==========================
 
-0. PRÉREQUIS : CRÉER LA MACHINE VIRTUELLE
+0. PRÉREQUIS : CRÉER LES MACHINES VIRTUELLES
 ------------------------------------------
+- Créer deux VMs sous Debian 12 (64 bits) : node1 et node2
 - Utiliser VirtualBox ou autre hyperviseur
-- Installer Debian 12 (64 bits)
-- Activer l’accès réseau en mode **Accès par pont (Bridge)** pour permettre l’accès HTTP/HTTPS depuis l’hôte
-- Lancer votre VM et ouvrer un terminal.
-- Installer **openssh-server** pour permettre la connexion SSH :
+- Activer le mode **Accès par pont (Bridge)** pour chaque VM
+- Installer **openssh-server** :
   sudo apt install openssh-server
-- Vérifier l’adresse IP :
-  ip a
-  ➤ Vous devriez voir une IP de type 192.168.x.x (réseau local)
-- Connexion SSH depuis l’hôte (Machine Physique) :
-  ssh user@IP_DE_LA_VM
+
+- Vérifier les IP de chaque VM :
+  ip a ➤ (ex: node1 → 192.168.1.101, node2 → 192.168.1.102)
+
+- Modifier les noms de machine :
+  node1 → sudo hostnamectl set-hostname node1
+  node2 → sudo hostnamectl set-hostname node2
+
+- Ajouter les deux noms dans `/etc/hosts` sur les deux machines :
+  192.168.1.101 node1
+  192.168.1.102 node2
 
 1. CONNEXION EN ROOT
 ----------------------
 su
 
-2. MISE À JOUR DE LA VM
+2. MISE À JOUR DE CHAQUE VM
 --------------------------
 apt update && apt upgrade -y
 
-3. INSTALLATION DES PAQUETS NÉCESSAIRES
-----------------------------------------
-apt install build-essential apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl -y
+3. INSTALLATION DES PAQUETS NÉCESSAIRES (sur les deux nœuds)
+------------------------------------------------------------
+apt install build-essential apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl pacemaker corosync crmsh resource-agents -y
 
-➤ build-essential : outils de compilation (gcc, make, etc.)
-➤ apache2 : serveur HTTP
-➤ mariadb-server : base de données
-➤ php et modules nécessaires pour exécuter le site
-➤ openssl : gestion de certificat SSL
-
-# ajoutez les répertoires système dans le PATH (utile pour les commandes admin)
+# Ajouter /usr/sbin au PATH :
 export PATH=$PATH:/usr/sbin:/sbin
 
-# vérifiez les variables d’environnement :
-echo $PATH
-➤ Affiche les dossiers où le système cherche les exécutables
+# Vérifier :
+echo $PATH ➤ Affiche les chemins utilisés pour les commandes
 
-Modifier les paramètres suivants dans : nano /etc/php/8.2/apache2/php.ini
+Modifier les paramètres PHP :
+nano /etc/php/8.2/apache2/php.ini
 upload_max_filesize = 50M
 post_max_size = 60M
 
-4. CONFIGURATION HTTPS (CERTIFICAT AUTO-SIGNÉ)
+4. CONFIGURATION HTTPS (SUR CHAQUE NŒUD)
 -----------------------------------------------
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/coursero.key -out /etc/ssl/certs/coursero.crt
-
-➤ Laisser les champs vides si non pertinents
 
 nano /etc/apache2/sites-available/coursero.conf
 
@@ -69,26 +66,26 @@ nano /etc/apache2/sites-available/coursero.conf
     </Directory>
 </VirtualHost>
 
-Activer SSL et le site :
 a2enmod ssl
 a2ensite coursero
 systemctl reload apache2
 
-5. CLONAGE DU DÉPÔT GIT
-------------------------
+5. CLONAGE DU DÉPÔT GIT SUR node1, puis COPY sur node2
+-----------------------------------------------------
 cd /var/www/html
 git clone https://github.com/Gael-Lopes-Da-Silva/coursero.git
 chown -R www-data:www-data coursero
-
-# Évite les erreurs de sécurité Git
 git config --global --add safe.directory /var/www/html/coursero
+
+Puis copier vers node2 :
+scp -r /var/www/html/coursero root@node2:/var/www/html/
 
 6. CONFIGURATION DE LA BASE DE DONNÉES
 ---------------------------------------
-# Importer la structure de la base :
+Sur node1 :
 mysql -u root < /var/www/html/coursero/database/base.sql
 
-# Créer un utilisateur dédié :
+Puis créer l’utilisateur :
 sudo mysql
 
 CREATE USER 'coursero'@'localhost' IDENTIFIED BY 'coursero';
@@ -96,13 +93,18 @@ GRANT ALL PRIVILEGES ON coursero.* TO 'coursero'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 
+Copier aussi la base si besoin vers node2 avec :
+mysqldump -u root coursero > dump.sql
+scp dump.sql root@node2:/tmp/
+mysql -u root < /tmp/dump.sql
+
+Créer l'utilisateur sur node2 aussi :
+(sudo mysql puis mêmes commandes que ci-dessus)
+
 7. HIGH AVAILABILITY (PACEMAKER + COROSYNC + IP FLOTTANTE)
 -----------------------------------------------------------
 
-# Installer les paquets sur les 2 nœuds :
-apt install pacemaker corosync crmsh resource-agents -y
-
-# Éditer le fichier corosync.conf :
+Configurer Corosync (sur node1) :
 nano /etc/corosync/corosync.conf
 
 Contenu :
@@ -135,14 +137,14 @@ quorum {
   provider: corosync_votequorum
 }
 
-# Copier le fichier vers le second nœud :
+Copier ce fichier vers node2 :
 scp /etc/corosync/corosync.conf root@node2:/etc/corosync/
 
-# Démarrer les services :
+Activer et démarrer les services sur les deux nœuds :
 systemctl enable corosync pacemaker
 systemctl start corosync pacemaker
 
-# Créer les ressources de cluster :
+Créer les ressources du cluster (sur node1) :
 crm configure
 
 primitive webserver ocf:heartbeat:apache \
@@ -155,50 +157,55 @@ primitive vip ocf:heartbeat:IPaddr2 \
 group web-group vip webserver
 commit
 
-# Réplication MariaDB Master-Slave
-
+8. RÉPLICATION MARIADB MASTER-SLAVE
+------------------------------------
+Sur node1 :
 sudo mysql
-
-Sur le serveur principal (node1) :
 CREATE USER 'replica'@'%' IDENTIFIED BY 'replica';
 GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
 FLUSH PRIVILEGES;
 
-Modifier le fichier :
 nano /etc/mysql/mariadb.conf.d/50-server.cnf
-
 Ajouter :
 server-id = 1
 log_bin = mysql-bin
 
-Redémarrer MariaDB :
 systemctl restart mariadb
 
-Sur le second serveur (node2) :
+Sur node2 :
+nano /etc/mysql/mariadb.conf.d/50-server.cnf
+Ajouter :
+server-id = 2
+
+systemctl restart mariadb
+
+Configurer la réplication :
 CHANGE MASTER TO
   MASTER_HOST='192.168.1.101',
   MASTER_USER='replica',
   MASTER_PASSWORD='replica',
   MASTER_LOG_FILE='mysql-bin.000001',
-  MASTER_LOG_POS= 123;
+  MASTER_LOG_POS=123;
 START SLAVE;
 
-8. TACHE CRON pour le script de correction
---------------
+9. TACHE CRON POUR LE SCRIPT DE CORRECTION
+------------------------------------------
 chmod +x /var/www/html/coursero/script/corrector.sh
+(créer la même chose sur node2 si script copié)
 
+Sortir de root :
+exit
+
+Créer une tâche CRON :
 crontab -e
-
+Puis ajouter :
 */5 * * * * bash /var/www/html/coursero/script/corrector.sh >> /var/log/corrector.log 2>&1
 
-Attendre 5 minutes pour vérifier les logs:
-cat /var/log/corrector.log
-
-
-9. TEST FINAL
+10. TEST FINAL
 --------------
-- Accès : https://[IP_VM]
+- Accès : https://192.168.1.100
 - Connexion et soumission
 - File d’attente active
 - Mise à jour des scores
-- Failover HA si un nœud tombe
+- Vérifier la réplication MariaDB
+- Vérifier failover avec `crm node standby node1`
