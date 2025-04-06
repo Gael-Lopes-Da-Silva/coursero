@@ -125,7 +125,10 @@ include "../include/_notifs.php";
                             <!-- Première ligne par défaut -->
                             <div class="mb-2 test-row">
                                 <div class="input-group mb-1">
+                                <div class="arg-item input-group mb-1">
                                     <input type="text" class="form-control" name="args[0][]" placeholder="Argument">
+                                    <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
+                                </div>
                                     <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
@@ -154,28 +157,34 @@ function addTestRow() {
     const row = document.createElement('div');
     row.className = 'mb-2 test-row';
     row.innerHTML = `
-        <div class="input-group mb-1">
-            <input type="text" class="form-control" name="args[${testIndex}][]" placeholder="Argument">
-            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
+        <div class="arg-list">
+            <div class="arg-item input-group mb-1">
+                <input type="text" class="form-control" name="args[${testIndex}][]" placeholder="Argument">
+                <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
+            </div>
         </div>
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addArg(this)">+ Ajouter un argument</button>
+        <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">✕ Supprimer le test</button>
     `;
     container.appendChild(row);
     testIndex++;
 }
 
+
 function addArg(button) {
-    const group = button.parentElement.querySelector('.input-group');
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'form-control';
-    input.placeholder = 'Argument';
+    const argList = button.parentElement.querySelector('.arg-list');
+    const testNum = argList.querySelector('input').name.match(/\d+/)[0];
 
-    const testNum = group.querySelector('input').name.match(/\d+/)[0];
-    input.name = `args[${testNum}][]`;
+    const argItem = document.createElement('div');
+    argItem.className = 'arg-item input-group mb-1';
+    argItem.innerHTML = `
+        <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
+        <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">✕</button>
+    `;
 
-    group.insertBefore(input, group.lastElementChild); // Avant le bouton supprimer
+    argList.appendChild(argItem);
 }
+
 
 </script>
 
