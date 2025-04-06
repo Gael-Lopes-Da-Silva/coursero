@@ -183,7 +183,19 @@ CHANGE MASTER TO
   MASTER_LOG_POS= 123;
 START SLAVE;
 
-8. TEST FINAL
+8. TACHE CRON pour le script de correction
+--------------
+chmod +x /var/www/html/coursero/script/corrector.sh
+
+crontab -e
+
+*/5 * * * * bash /var/www/html/coursero/script/corrector.sh >> /var/log/corrector.log 2>&1
+
+Attendre 5 minutes pour vérifier les logs:
+cat /var/log/corrector.log
+
+
+9. TEST FINAL
 --------------
 - Accès : https://[IP_VM]
 - Connexion et soumission
