@@ -1,5 +1,6 @@
+
 ==========================
-INSTALLATION ENVIRONNEMENT - COURSERO
+INSTALLATION ENVIRONNEMENT - COURSERO (HA + HTTPS)
 ==========================
 
 0. PRÉREQUIS : CRÉER LA MACHINE VIRTUELLE
@@ -8,11 +9,12 @@ INSTALLATION ENVIRONNEMENT - COURSERO
 - Installer Debian 12 (64 bits)
 - Activer l’accès réseau en mode **Accès par pont (Bridge)** pour permettre l’accès HTTP/HTTPS depuis l’hôte
 - Installer **openssh-server** pour permettre la connexion SSH :
-  - su  
-  - sudo apt install openssh-server
-- Vérifier l’adresse IP avec (vous devriez voir une ip 192.168.x.x) : ip a
-- Connexion SSH possible depuis l’hôte :
-    ssh user@IP_DE_LA_VM
+  sudo apt install openssh-server
+- Vérifier l’adresse IP :
+  ip a
+  ➤ Vous devriez voir une IP de type 192.168.x.x (réseau local)
+- Connexion SSH depuis l’hôte :
+  ssh user@IP_DE_LA_VM
 
 1. CONNEXION EN ROOT
 ----------------------
@@ -24,28 +26,33 @@ apt update && apt upgrade -y
 
 3. INSTALLATION DES PAQUETS NÉCESSAIRES
 ----------------------------------------
-apt install apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl -y
+apt install build-essential apache2 mariadb-server php libapache2-mod-php php-mysql unzip git openssl -y
 
-# ajoutez sbin dans le PATH
+➤ build-essential : outils de compilation (gcc, make, etc.)
+➤ apache2 : serveur HTTP
+➤ mariadb-server : base de données
+➤ php et modules nécessaires pour exécuter le site
+➤ openssl : gestion de certificat SSL
+
+# ajoutez les répertoires système dans le PATH (utile pour les commandes admin)
 export PATH=$PATH:/usr/sbin:/sbin
 
-# vérifiez les variable d'environnement
+# vérifiez les variables d’environnement :
 echo $PATH
+➤ Affiche les dossiers où le système cherche les exécutables
 
-Modifier les paramètres suivants dans: nano /etc/php/8.2/apache2/php.ini
+Modifier les paramètres suivants dans : nano /etc/php/8.2/apache2/php.ini
 upload_max_filesize = 50M
 post_max_size = 60M
-
 
 4. CONFIGURATION HTTPS (CERTIFICAT AUTO-SIGNÉ)
 -----------------------------------------------
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/coursero.key -out /etc/ssl/certs/coursero.crt
 
-Skip les informations qu'on demande
+➤ Laisser les champs vides si non pertinents
 
 nano /etc/apache2/sites-available/coursero.conf
 
-# Contenu du fichier :
 <VirtualHost *:443>
     ServerAdmin admin@localhost
     DocumentRoot /var/www/html/coursero
@@ -61,7 +68,7 @@ nano /etc/apache2/sites-available/coursero.conf
     </Directory>
 </VirtualHost>
 
-# Activation SSL + redémarrage
+Activer SSL et le site :
 a2enmod ssl
 a2ensite coursero
 systemctl reload apache2
@@ -72,24 +79,113 @@ cd /var/www/html
 git clone https://github.com/Gael-Lopes-Da-Silva/coursero.git
 chown -R www-data:www-data coursero
 
+# Évite les erreurs de sécurité Git
 git config --global --add safe.directory /var/www/html/coursero
 
 6. CONFIGURATION DE LA BASE DE DONNÉES
 ---------------------------------------
-# Exécute simplement la commande suivante pour tout importer :
+# Importer la structure de la base :
 mysql -u root < /var/www/html/coursero/database/base.sql
 
-# Crée un utilisateur MySQL dédié au site :
+# Créer un utilisateur dédié :
 sudo mysql
+
 CREATE USER 'coursero'@'localhost' IDENTIFIED BY 'coursero';
 GRANT ALL PRIVILEGES ON coursero.* TO 'coursero'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 
-7. TEST FINAL
+7. HIGH AVAILABILITY (PACEMAKER + COROSYNC + IP FLOTTANTE)
+-----------------------------------------------------------
+
+# Installer les paquets sur les 2 nœuds :
+apt install pacemaker corosync crmsh resource-agents -y
+
+# Éditer le fichier corosync.conf :
+nano /etc/corosync/corosync.conf
+
+Contenu :
+totem {
+  version: 2
+  secauth: off
+  cluster_name: cours-cluster
+  transport: udpu
+  interface {
+    ringnumber: 0
+    bindnetaddr: 192.168.1.0
+    mcastport: 5405
+  }
+}
+
+nodelist {
+  node {
+    ring0_addr: node1
+    name: node1
+    nodeid: 1
+  }
+  node {
+    ring0_addr: node2
+    name: node2
+    nodeid: 2
+  }
+}
+
+quorum {
+  provider: corosync_votequorum
+}
+
+# Copier le fichier vers le second nœud :
+scp /etc/corosync/corosync.conf root@node2:/etc/corosync/
+
+# Démarrer les services :
+systemctl enable corosync pacemaker
+systemctl start corosync pacemaker
+
+# Créer les ressources de cluster :
+crm configure
+
+primitive webserver ocf:heartbeat:apache \
+    params configfile=/etc/apache2/apache2.conf \
+    op monitor interval=30s
+
+primitive vip ocf:heartbeat:IPaddr2 \
+    params ip=192.168.1.100 cidr_netmask=24 nic=eth0
+
+group web-group vip webserver
+commit
+
+# Réplication MariaDB Master-Slave
+
+sudo mysql
+
+Sur le serveur principal (node1) :
+CREATE USER 'replica'@'%' IDENTIFIED BY 'replica';
+GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
+FLUSH PRIVILEGES;
+
+Modifier le fichier :
+nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+Ajouter :
+server-id = 1
+log_bin = mysql-bin
+
+Redémarrer MariaDB :
+systemctl restart mariadb
+
+Sur le second serveur (node2) :
+CHANGE MASTER TO
+  MASTER_HOST='192.168.1.101',
+  MASTER_USER='replica',
+  MASTER_PASSWORD='replica',
+  MASTER_LOG_FILE='mysql-bin.000001',
+  MASTER_LOG_POS= 123;
+START SLAVE;
+
+8. TEST FINAL
 --------------
-- Accès HTTPS au site de l’adresse IP avec (vous devriez voir une ip 192.168.x.x) "ip a" : https://[IP_VM]
-- Authentification
-- Soumission d’un fichier
-- Traitement par la file d’attente
-- Mise à jour du score
+- Accès : https://[IP_VM]
+- Connexion et soumission
+- File d’attente active
+- Mise à jour des scores
+- Failover HA si un nœud tombe
