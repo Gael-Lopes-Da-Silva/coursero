@@ -8,12 +8,13 @@ INSTALLATION ENVIRONNEMENT - COURSERO (HA + HTTPS)
 - Utiliser VirtualBox ou autre hyperviseur
 - Installer Debian 12 (64 bits)
 - Activer l’accès réseau en mode **Accès par pont (Bridge)** pour permettre l’accès HTTP/HTTPS depuis l’hôte
+- Lancer votre VM et ouvrer un terminal.
 - Installer **openssh-server** pour permettre la connexion SSH :
   sudo apt install openssh-server
 - Vérifier l’adresse IP :
   ip a
   ➤ Vous devriez voir une IP de type 192.168.x.x (réseau local)
-- Connexion SSH depuis l’hôte :
+- Connexion SSH depuis l’hôte (Machine Physique) :
   ssh user@IP_DE_LA_VM
 
 1. CONNEXION EN ROOT
