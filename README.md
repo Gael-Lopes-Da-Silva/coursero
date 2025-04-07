@@ -13,11 +13,9 @@ A small website in php to manage courses submissions and rank them.
 Environment
 ------------------------------------------------------------------
 
-The following is the format that the `.env` file need to take to let the website link to the database:
+See the document "setup_environnement_complet.txt"
 
-~~~ini
-DB_HOST=XXX
-DB_USER=XXX
-DB_PASSWORD=XXX
-DB_NAME=XXX
-~~~
+
+Implementation choices
+------------------------------------------------------------------
+See the document "implementation_choices.txt"

@@ -1,0 +1,68 @@
+Document – Implementation Choices for the COURSERO Project
+==========================================================
+
+1. General Project Overview
+----------------------------
+The COURSERO project is a web platform for the submission and automated grading of assignments. 
+It is built on a secure and highly available architecture using proven web technologies 
+(PHP, Apache, MySQL) along with orchestration tools (Pacemaker/Corosync) and database replication.
+
+2. Technologies Used
+---------------------
+- Back-end: PHP
+- Front-end: Bootstrap / jQuery
+- Web Server: Apache2
+- Database: MariaDB (MySQL-compatible)
+- Security: OpenSSL for HTTPS
+- Version Control: Git (hosted on GitHub)
+- Development Environment: Docker (development only)
+- High Availability Orchestration: Pacemaker + Corosync
+- Database Replication: MariaDB Master-Slave
+
+3. Overall Architecture
+------------------------
+The project’s full architecture is summarized in a diagram included in the documentation. It includes:
+
+- The user accesses the platform via HTTPS.
+- The web server (Apache + PHP) handles requests and interacts with:
+  * A Git repository to retrieve submitted assignments.
+  * A MySQL-compatible database to store users, submissions, and results.
+  * A grading script, regularly executed, that evaluates the assignments automatically.
+
+4. Technical Choices and Justifications
+----------------------------------------
+
+🔐 HTTPS (OpenSSL + Apache)
+- Ensures confidentiality of data transmission.
+- OpenSSL allows quick setup of self-signed certificates.
+
+📂 Git for Assignment Submissions
+- Versions each submitted file.
+- Facilitates tracking changes, rolling back, and automatic grading.
+
+📄 Automated Grading Script
+- Triggered via CRON job every 5 minutes.
+- Automates scoring based on predefined criteria.
+
+🐳 Docker for Development
+- Provides isolated and reproducible environment.
+- Used locally only, for developer convenience.
+
+5. Deployment and Documentation
+-------------------------------
+Deployment is fully described in the technical documentation ("setup_environnement_complet.txt"), which includes:
+
+- Creating VMs (node1 / node2)
+- Installing dependencies (PHP, Apache, MariaDB, Git…)
+- Configuring HTTPS
+- Cloning the project and creating the .env file
+- Setting up MariaDB replication
+- Configuring the HA cluster (Pacemaker and Corosync)
+
+6. Conclusion
+--------------
+This architecture ensures:
+- Data security (via HTTPS)
+- High availability (via HA cluster)
+- Scalable automated grading
+- Good maintainability (thanks to Git and DB replication)
