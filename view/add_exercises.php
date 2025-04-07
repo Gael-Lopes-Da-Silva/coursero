@@ -25,21 +25,6 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
     $safeFileName = time() . "_" . preg_replace("/[^a-zA-Z0-9._-]/", "_", $fileName);
     $destination = $uploadDir . $safeFileName;
 
-    $allowedExtensions = [
-        'python' => ['py'],
-        'c'      => ['c', 'h']
-    ];
-
-    $language = strtolower($_POST['language']);
-    if (!isset($allowedExtensions[$language]) || !in_array($fileExtension, $allowedExtensions[$language])) {
-        $_SESSION['notification'] = [
-            "message" => "Le type de fichier ne correspond pas au langage sélectionné.",
-            "type" => "danger",
-        ];
-        header("location: form.php?course=" . $_POST['course']);
-        exit;
-    }
-
     if (!move_uploaded_file($fileTmpPath, $destination)) {
         $_SESSION['notification'] = [
             "message" => "Problème lors de la récupération du fichier.",
