@@ -171,9 +171,8 @@ crm configure
 
 primitive webserver ocf:heartbeat:apache params configfile="/etc/apache2/apache2.conf" op monitor interval="30s"
 
+# Pour la valeur de "nic" sur la commande ci-dessus, il faut regarder avec "ip a" à la fin de la ligne où est l'ip de la VM:
 primitive vip ocf:heartbeat:IPaddr2 params ip=192.168.1.100 cidr_netmask=24 nic=enp0s3
-
-# Pour la valeur de "nic" sur la commande ci-dessus, il faut regarder avec "ip a" à la fin de la ligne où est l'ip de la VM.
 
 group web-group vip webserver
 
@@ -214,7 +213,8 @@ systemctl restart mariadb
 Configurer la réplication :
 sudo mysql
 
-CHANGE MASTER TO MASTER_HOST='192.168.1.18', MASTER_USER='replica', MASTER_PASSWORD='replica', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=123;
+# Pour les valeurs de "MASTER_LOG_FILE" et de "MASTER_LOG_POS", vous lancer sur node1 "SHOW MASTER STATUS;":
+CHANGE MASTER TO MASTER_HOST='192.168.1.18', MASTER_USER='replica', MASTER_PASSWORD='replica', MASTER_LOG_FILE='mysql-bin.000002', MASTER_LOG_POS=342;
 
 START SLAVE;
 
