@@ -9,18 +9,26 @@ INSTALLATION ENVIRONNEMENT - COURSERO (HA + HTTPS)
 - Utiliser VirtualBox ou autre hyperviseur
 - Activer le mode **Accès par pont (Bridge)** pour chaque VM
 - Installer **openssh-server** :
+  su
   sudo apt install openssh-server
 
 - Vérifier les IP de chaque VM :
-  ip a ➤ (exemple: node1 → 192.168.1.18, node2 → 192.168.1.19)
+  ip a ➤ Vous devriez voir une IP de type 192.168.x.x (réseau local) (exemple: node1 → 192.168.1.18, node2 → 192.168.1.19)
+- Connexion SSH depuis l’hôte (Machine Physique) : ssh user@IP_DE_LA_VM
+- Si un problème occure sur une VM alors faite:
+  sudo ssh-keygen -A
+  sudo systemctl restart ssh
 
 - Modifier les noms de machine :
+  su
   node1 → sudo hostnamectl set-hostname node1
   node2 → sudo hostnamectl set-hostname node2
 
-- Ajouter les deux noms dans `/etc/hosts` sur les deux machines :
+- Ajouter les deux noms dans `nano /etc/hosts` sur les deux machines :
   192.168.1.18 node1
   192.168.1.19 node2
+
+Se reconnecter à la VM en SSH.
 
 1. CONNEXION EN ROOT
 ----------------------
@@ -72,12 +80,21 @@ systemctl reload apache2
 
 5. CLONAGE DU DÉPÔT GIT SUR node1, puis COPY sur node2
 -----------------------------------------------------
+Sur node1:
 cd /var/www/html
 git clone https://github.com/Gael-Lopes-Da-Silva/coursero.git
 chown -R www-data:www-data coursero
 git config --global --add safe.directory /var/www/html/coursero
 
-Puis copier vers node2 :
+Sur node2 :
+sudo nano /etc/ssh/sshd_config
+
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+
+Redemarrer ssh du node2: sudo systemctl restart ssh
+
+Sur node1, copier vers node2 :
 scp -r /var/www/html/coursero root@node2:/var/www/html/
 
 6. CONFIGURATION DE LA BASE DE DONNÉES
@@ -92,11 +109,6 @@ CREATE USER 'coursero'@'localhost' IDENTIFIED BY 'coursero';
 GRANT ALL PRIVILEGES ON coursero.* TO 'coursero'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
-
-Copier aussi la base si besoin vers node2 avec :
-mysqldump -u root coursero > dump.sql
-scp dump.sql root@node2:/tmp/
-mysql -u root < /tmp/dump.sql
 
 Créer l'utilisateur sur node2 aussi :
 (sudo mysql puis mêmes commandes que ci-dessus)
@@ -147,15 +159,24 @@ systemctl start corosync pacemaker
 Créer les ressources du cluster (sur node1) :
 crm configure
 
-primitive webserver ocf:heartbeat:apache \
-    params configfile=/etc/apache2/apache2.conf \
-    op monitor interval=30s
+primitive webserver ocf:heartbeat:apache params configfile="/etc/apache2/apache2.conf" op monitor interval="30s"
 
-primitive vip ocf:heartbeat:IPaddr2 \
-    params ip=192.168.1.100 cidr_netmask=24 nic=eth0
+primitive vip ocf:heartbeat:IPaddr2 params ip=192.168.1.100 cidr_netmask=24 nic=enp0s3
+
+# Pour la valeur de "nic" sur la commande ci-dessus, il faut regarder avec "ip a" à la fin de la ligne où est l'ip de la VM.
 
 group web-group vip webserver
+
+property stonith-enabled=false
+
 commit
+
+Ignorer le message: WARNING: (unpack_config)        warning: Blind faith: not fencing unseen nodes
+
+faite "quit" puis: crm status
+
+Vous verrez que tout est lancé
+
 
 8. RÉPLICATION MARIADB MASTER-SLAVE
 ------------------------------------
@@ -164,9 +185,10 @@ sudo mysql
 CREATE USER 'replica'@'%' IDENTIFIED BY 'replica';
 GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
 FLUSH PRIVILEGES;
+EXIT;
 
 nano /etc/mysql/mariadb.conf.d/50-server.cnf
-Ajouter :
+Ajouter dans mysqld :
 server-id = 1
 log_bin = mysql-bin
 
@@ -174,19 +196,21 @@ systemctl restart mariadb
 
 Sur node2 :
 nano /etc/mysql/mariadb.conf.d/50-server.cnf
-Ajouter :
+Ajouter dans mysqld :
 server-id = 2
 
 systemctl restart mariadb
 
 Configurer la réplication :
-CHANGE MASTER TO
-  MASTER_HOST='192.168.1.18',
-  MASTER_USER='replica',
-  MASTER_PASSWORD='replica',
-  MASTER_LOG_FILE='mysql-bin.000001',
-  MASTER_LOG_POS=123;
+sudo mysql
+
+CHANGE MASTER TO MASTER_HOST='192.168.1.18', MASTER_USER='replica', MASTER_PASSWORD='replica', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=123;
+
 START SLAVE;
+
+Sur node1:
+sudo mysql
+SHOW MASTER STATUS;
 
 9. TACHE CRON POUR LE SCRIPT DE CORRECTION
 ------------------------------------------
