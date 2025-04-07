@@ -115,14 +115,14 @@ include "../include/_notifs.php";
                     </div>
 
                     <div class="input-group mb-3">
-                        <input type="file" name="file" class="form-control" required>
+                        <input type="file" name="file" class="form-control" id="file" accept=".c,.h,.py" required>
                     </div>
 
                     <!-- Arguments -->
                     <div class="mb-3">
                         <label for="args" class="form-label fw-bold">Tests & Arguments</label>
-                        <div id="args-container" class="d-flex flex-column gap-3"></div>
-                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addTestRow()">+ Ajouter un test</button>
+                        <div id="args-container" class="d-flex flex-column gap-3 mb-2"></div>
+                        <button type="button" id="add-test" class="btn btn-sm btn-secondary d-flex gap-2"><i class="bi bi-plus-circle-fill"></i>Ajouter un test</button>
                     </div>
 
                     <input type="submit" class="btn btn-primary rounded col-12" value="Ajouter cet exercice">
@@ -138,81 +138,62 @@ include "../include/_notifs.php";
 </div>
 
 <script>
-let testIndex = 0;
+    $(document).ready(function() {
+        let testIndex = 0;
 
-// Ajoute une ligne de test complète
-function addTestRow() {
-    const container = document.getElementById('args-container');
-    const row = document.createElement('div');
-    row.className = 'border rounded p-3 bg-light position-relative test-row';
+        $("#add-test").on("click", function() {
+            const row = document.createElement('div');
+            row.className = 'border rounded p-3 position-relative test-row';
+            row.innerHTML = `
+                <div class="arg-list d-flex flex-column gap-2 mb-2"></div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex gap-2" onclick="syncAddArg()"><i class="bi bi-plus-circle-fill"></i>Ajouter un argument</button>
+                    <button type="button" class="btn btn-sm btn-danger ms-auto d-flex gap-2" onclick="this.parentElement.parentElement.remove()"><i class="bi bi-x-circle-fill"></i>Supprimer ce test</button>
+                </div>
+            `;
 
-    row.innerHTML = `
-        <div class="arg-list d-flex flex-column gap-2 mb-2"></div>
-        <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="syncAddArg()">+ Ajouter un argument</button>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="syncRemoveArg()">✕ Supprimer un argument</button>
-            <button type="button" class="btn btn-sm btn-danger ms-auto" onclick="this.parentElement.parentElement.remove()">✕ Supprimer ce test</button>
-        </div>
-    `;
-
-    container.appendChild(row);
-
-    // Synchronise avec les autres tests
-    syncToLongestArgs();
-}
-
-// Ajoute un argument à tous les tests
-function syncAddArg() {
-    document.querySelectorAll('.test-row').forEach((row, i) => {
-        const argList = row.querySelector('.arg-list');
-        const testNum = i;
-        const argItem = document.createElement('div');
-        argItem.className = 'input-group arg-item';
-        argItem.innerHTML = `
-            <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
-            <button type="button" class="btn btn-outline-danger" disabled>✕</button>
-        `;
-        argList.appendChild(argItem);
-    });
-}
-
-// Supprime le **dernier** argument dans tous les tests
-function syncRemoveArg() {
-    document.querySelectorAll('.test-row').forEach((row) => {
-        const argList = row.querySelector('.arg-list');
-        const items = argList.querySelectorAll('.arg-item');
-        if (items.length > 0) {
-            argList.removeChild(items[items.length - 1]);
-        }
-    });
-}
-
-// Lorsque l’on ajoute un test, lui ajouter autant d’arguments que les autres
-function syncToLongestArgs() {
-    const allRows = document.querySelectorAll('.test-row');
-    if (allRows.length === 0) return;
-
-    // Trouver le nombre max d'arguments
-    let maxArgs = 0;
-    allRows.forEach(row => {
-        const count = row.querySelectorAll('.arg-item').length;
-        if (count > maxArgs) maxArgs = count;
+            $("#args-container").append(row);
+            syncToLongestArgs();
+        });
     });
 
-    // Mettre à niveau tous les tests
-    allRows.forEach((row, i) => {
-        const argList = row.querySelector('.arg-list');
-        while (argList.children.length < maxArgs) {
+    function syncAddArg() {
+        document.querySelectorAll('.test-row').forEach((row, i) => {
+            const argList = row.querySelector('.arg-list');
+            const testNum = i;
             const argItem = document.createElement('div');
             argItem.className = 'input-group arg-item';
             argItem.innerHTML = `
-                <input type="text" class="form-control" name="args[${i}][]" placeholder="Argument">
-                <button type="button" class="btn btn-outline-danger" disabled>✕</button>
+                <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="bi bi-trash-fill"></i></button>
             `;
             argList.appendChild(argItem);
-        }
-    });
-}
+        });
+    }
+
+    function syncToLongestArgs() {
+        const allRows = document.querySelectorAll('.test-row');
+        if (allRows.length === 0) return;
+
+        let maxArgs = 0;
+        allRows.forEach(row => {
+            const count = row.querySelectorAll('.arg-item').length;
+            if (count > maxArgs) maxArgs = count;
+        });
+
+        allRows.forEach((row, i) => {
+            const argList = row.querySelector('.arg-list');
+            while (argList.children.length < maxArgs) {
+                const argItem = document.createElement('div');
+                argItem.className = 'input-group arg-item';
+                argItem.innerHTML = `
+                    <input type="text" class="form-control" name="args[${i}][]" placeholder="Argument">
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="bi bi-trash-fill"></i></button>
+                `;
+                argList.appendChild(argItem);
+            }
+        });
+    }
 </script>
 
 <?php include "../include/_footer.php"; ?>
