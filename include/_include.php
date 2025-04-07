@@ -2,7 +2,8 @@
 
 session_start();
 
-$mysqli = mysqli_connect("localhost", "coursero", "coursero", "coursero");
+$env = parse_ini_file(".env");
+$mysqli = mysqli_connect($env['DB_HOST'], $env['DB_USER'], $env['DB_PASSWORD'], $env['DB_NAME']);
 
 function is_logged_in(): bool {
     return isset($_SESSION['user']);
