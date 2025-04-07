@@ -12,15 +12,15 @@ INSTALLATION ENVIRONNEMENT - COURSERO (HA + HTTPS)
   sudo apt install openssh-server
 
 - Vérifier les IP de chaque VM :
-  ip a ➤ (ex: node1 → 192.168.1.101, node2 → 192.168.1.102)
+  ip a ➤ (exemple: node1 → 192.168.1.18, node2 → 192.168.1.19)
 
 - Modifier les noms de machine :
   node1 → sudo hostnamectl set-hostname node1
   node2 → sudo hostnamectl set-hostname node2
 
 - Ajouter les deux noms dans `/etc/hosts` sur les deux machines :
-  192.168.1.101 node1
-  192.168.1.102 node2
+  192.168.1.18 node1
+  192.168.1.19 node2
 
 1. CONNEXION EN ROOT
 ----------------------
@@ -181,7 +181,7 @@ systemctl restart mariadb
 
 Configurer la réplication :
 CHANGE MASTER TO
-  MASTER_HOST='192.168.1.101',
+  MASTER_HOST='192.168.1.18',
   MASTER_USER='replica',
   MASTER_PASSWORD='replica',
   MASTER_LOG_FILE='mysql-bin.000001',
