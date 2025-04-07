@@ -25,6 +25,21 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
     $safeFileName = time() . "_" . preg_replace("/[^a-zA-Z0-9._-]/", "_", $fileName);
     $destination = $uploadDir . $safeFileName;
 
+    $allowedExtensions = [
+        'python' => ['py'],
+        'c'      => ['c', 'h']
+    ];
+
+    $language = strtolower($_POST['language']);
+    if (!isset($allowedExtensions[$language]) || !in_array($fileExtension, $allowedExtensions[$language])) {
+        $_SESSION['notification'] = [
+            "message" => "Le type de fichier ne correspond pas au langage sélectionné.",
+            "type" => "danger",
+        ];
+        header("location: form.php?course=" . $_POST['course']);
+        exit;
+    }
+
     if (!move_uploaded_file($fileTmpPath, $destination)) {
         $_SESSION['notification'] = [
             "message" => "Problème lors de la récupération du fichier.",
@@ -34,9 +49,7 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
         exit;
     }
 
-    // Traitement des arguments
     $args = [];
-
     if (isset($_POST['args']) && is_array($_POST['args'])) {
         foreach ($_POST['args'] as $group) {
             if (is_array($group) && count(array_filter($group)) > 0) {
@@ -47,7 +60,6 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
 
     $args_json = json_encode($args);
 
-    // Insertion en base
     $query = $mysqli->prepare("INSERT INTO exercises (course_id, name, reference_file, args) VALUES (?, ?, ?, ?)");
     $query->bind_param("isss", $_POST['course'], $_POST['name'], $destination, $args_json);
 
@@ -118,7 +130,6 @@ include "../include/_notifs.php";
                         <input type="file" name="file" class="form-control" id="file" accept=".c,.h,.py" required>
                     </div>
 
-                    <!-- Arguments -->
                     <div class="mb-3">
                         <label for="args" class="form-label fw-bold">Tests & Arguments</label>
                         <div id="args-container" class="d-flex flex-column gap-3 mb-2"></div>
@@ -148,6 +159,7 @@ include "../include/_notifs.php";
                 <div class="arg-list d-flex flex-column gap-2 mb-2"></div>
                 <div class="d-flex flex-wrap gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary d-flex gap-2" onclick="syncAddArg()"><i class="bi bi-plus-circle-fill"></i>Ajouter un argument</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger d-flex gap-2" onclick="syncRemoveArg()"><i class="bi bi-x-circle-fill"></i>Supprimer un argument</button>
                     <button type="button" class="btn btn-sm btn-danger ms-auto d-flex gap-2" onclick="this.parentElement.parentElement.remove()"><i class="bi bi-x-circle-fill"></i>Supprimer ce test</button>
                 </div>
             `;
@@ -165,9 +177,18 @@ include "../include/_notifs.php";
             argItem.className = 'input-group arg-item';
             argItem.innerHTML = `
                 <input type="text" class="form-control" name="args[${testNum}][]" placeholder="Argument">
-                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="bi bi-trash-fill"></i></button>
             `;
             argList.appendChild(argItem);
+        });
+    }
+
+    function syncRemoveArg() {
+        document.querySelectorAll('.test-row').forEach((row) => {
+            const argList = row.querySelector('.arg-list');
+            const items = argList.querySelectorAll('.arg-item');
+            if (items.length > 0) {
+                argList.removeChild(items[items.length - 1]);
+            }
         });
     }
 
@@ -188,7 +209,6 @@ include "../include/_notifs.php";
                 argItem.className = 'input-group arg-item';
                 argItem.innerHTML = `
                     <input type="text" class="form-control" name="args[${i}][]" placeholder="Argument">
-                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="bi bi-trash-fill"></i></button>
                 `;
                 argList.appendChild(argItem);
             }
