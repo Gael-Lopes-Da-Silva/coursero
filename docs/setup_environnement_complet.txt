@@ -86,6 +86,16 @@ git clone https://github.com/Gael-Lopes-Da-Silva/coursero.git
 chown -R www-data:www-data coursero
 git config --global --add safe.directory /var/www/html/coursero
 
+Créer un fichier ".env":
+cd /var/www/html/coursero
+touch .env
+nano .env
+
+DB_HOST=localhost
+DB_USER=coursero
+DB_PASSWORD=coursero
+DB_NAME=coursero
+
 Sur node2 :
 sudo nano /etc/ssh/sshd_config
 
