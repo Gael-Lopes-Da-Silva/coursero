@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Lancé à $(date)" >> /home/afo/corrector.log
 
 if [[ $EUID -eq 0 ]]; then
     echo "❌ Ne pas exécuter ce script en tant que root."

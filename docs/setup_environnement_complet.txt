@@ -233,7 +233,11 @@ exit
 Créer une tâche CRON :
 crontab -e
 Puis ajouter :
-*/5 * * * * bash /var/www/html/coursero/script/corrector.sh >> /var/log/corrector.log 2>&1
+*/5 * * * * bash /var/www/html/coursero/script/corrector.sh >> /home/<user>/corrector.log 2>&1
+
+Donne les droits à ton user depuis root: 
+su
+sudo chown -R <user>:<user> /var/www/html/coursero/uploads
 
 10. TEST FINAL
 --------------
