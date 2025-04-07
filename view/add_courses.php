@@ -44,7 +44,9 @@ include "../include/_notifs.php";
 </div>
 
 <div class="position-absolute top-0 start-0 p-2">
-    <a class="btn btn-primary rounded" href="submissions.php">Mes soumissions</a>
+    <?php if ($_SESSION['user']['role'] != "admin" || $_SESSION['user']['role'] != "teacher"): ?>
+        <a class="btn btn-primary rounded" href="submissions.php">Mes soumissions</a>
+    <?php endif; ?>
     <?php if ($_SESSION['user']['role'] == "admin" || $_SESSION['user']['role'] == "teacher"): ?>
         <a class="btn btn-secondary rounded" href="add_courses.php">Ajouter un cours</a>
         <a class="btn btn-primary rounded" href="add_exercises.php">Ajouter un exercice</a>
