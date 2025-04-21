@@ -43,7 +43,6 @@ if (isset($_POST['course'], $_POST['exercise'], $_POST['language'], $_FILES['fil
         header("location: form.php?course=" . $_POST['course']);
         exit;
     }
-    chmod($destination, 0770);
 
     $status = "pending";
     $query = $mysqli->prepare("INSERT INTO submissions (user_id, course_id, exercise_id, language, file_path, status) VALUES (?, ?, ?, ?, ?, ?)");

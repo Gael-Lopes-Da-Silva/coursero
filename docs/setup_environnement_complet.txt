@@ -252,8 +252,10 @@ sudo groupadd coursero
 sudo usermod -aG coursero www-data
 sudo usermod -aG coursero afo
 sudo chown -R www-data:coursero /var/www/html/coursero
-
-Ajouter cette ligne après "!move_uploaded_file($fileTmpPath, $destination)" dans le code du site web: chmod($destination, 0770);
+sudo chmod -R g+rwx /var/www/html/coursero
+sudo apt-get install acl
+sudo setfacl -R -m default:group:coursero:rwx /var/www/html/coursero
+getfacl /var/www/html/coursero
 
 10. TEST FINAL
 --------------
