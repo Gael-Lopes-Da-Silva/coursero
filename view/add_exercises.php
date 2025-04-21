@@ -42,6 +42,7 @@ if (isset($_POST['course'], $_POST['name'], $_FILES['file'])) {
             }
         }
     }
+    chmod($destination, 0770);
 
     $args_json = json_encode($args);
 

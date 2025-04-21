@@ -187,6 +187,13 @@ faite "quit" puis: crm status
 Vous verrez que tout est lancé
 
 
+//config manquante
+crm configure property no-quorum-policy=ignore
+
+//bascule vers node1
+crm resource migrate web-group node1
+crm resource clear web-group
+
 8. RÉPLICATION MARIADB MASTER-SLAVE
 ------------------------------------
 Sur node1 :
@@ -238,6 +245,15 @@ Puis ajouter :
 Donne les droits à ton user depuis root: 
 su
 sudo chown -R <user>:<user> /var/www/html/coursero/uploads
+
+
+//upload depuis le site cassé car il faut initier un groupe
+sudo groupadd coursero
+sudo usermod -aG coursero www-data
+sudo usermod -aG coursero afo
+sudo chown -R www-data:coursero /var/www/html/coursero
+
+Ajouter cette ligne après "!move_uploaded_file($fileTmpPath, $destination)" dans le code du site web: chmod($destination, 0770);
 
 10. TEST FINAL
 --------------
